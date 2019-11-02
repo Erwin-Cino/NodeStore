@@ -2,37 +2,73 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../models/product");
 const mongoose = require("mongoose");
+const { check, validationResult } = require("express-validator");
 
 router.get("/", async (req, res, next) => {
   try {
-    const allProducts = await Product.find();
-    return res.status(200).json({ allProducts });
+    const allProducts = await Product.find().select("name price _id");
+    const response = {
+      count: allProducts.length,
+      products: allProducts.map(doc => {
+        return {
+          ...allProducts,
+          request: {
+            type: "GET",
+            url: "http://localhost:5000/products/" + doc._id
+          }
+        };
+      })
+    };
+    return res.status(200).json(response);
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 });
 
-router.post("/", async (req, res, next) => {
-  const { name, price } = req.body;
+router.post(
+  "/",
+  [
+    check("name", "Name of the product is required")
+      .not()
+      .isEmpty(),
+    check("price", "Please add a price to the product")
+      .not()
+      .isEmpty()
+  ],
+  async (req, res, next) => {
+    const { name, price } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
-  try {
-    const product = new Product({
-      _id: new mongoose.Types.ObjectId(),
-      name,
-      price
-    });
+    try {
+      const product = new Product({
+        _id: new mongoose.Types.ObjectId(),
+        name,
+        price
+      });
 
-    product.save();
+      product.save();
 
-    return res.status(201).json({
-      message: "Handling post request on products api",
-      product: product
-    });
-  } catch (error) {
-    console.log(error.message);
-    return res.status(500).json({ error: error.message });
+      return res.status(201).json({
+        message: "Created product successfully",
+        product: {
+          name: product.name,
+          price: product.price,
+          id: product._id,
+          request: {
+            type: "GET",
+            url: "http://localhost:5000/products/" + product._id
+          }
+        }
+      });
+    } catch (error) {
+      console.log(error.message);
+      return res.status(500).json({ error: error.message });
+    }
   }
-});
+);
 
 router.get("/:productId", async (req, res, next) => {
   const id = req.params.productId;
@@ -55,6 +91,10 @@ router.patch("/:productId", async (req, res, next) => {
   const productFields = {};
   if (name) productFields.name = name;
   if (price) productFields.price = price;
+  //   const updateOps = {};
+  //   for (const ops of Object.keys(req.body)) {
+  //     updateOps[ops.propName] = ops.value;
+  //   }
 
   try {
     let product = await Product.findById(id);
@@ -78,11 +118,17 @@ router.delete("/:productId", async (req, res, next) => {
   try {
     const deletedProduct = await Product.remove({ _id: id });
 
-    if (deletedProduct) {
-      return res.status(200).json({ deletedProduct });
-    } else {
-      return res.status(500).json({ message: "No product found with that ID" });
-    }
+    return res.status(200).json({
+      message: "Product Deleted",
+      requst: {
+        type: "POST",
+        url: "http:localhost:5000/products",
+        data: {
+          name: "String",
+          price: "Number"
+        }
+      }
+    });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
