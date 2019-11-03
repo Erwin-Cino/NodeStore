@@ -90,6 +90,7 @@ router.post(
         product: {
           name: product.name,
           price: product.price,
+          productImage: product.productImage,
           id: product._id,
           request: {
             type: "GET",
