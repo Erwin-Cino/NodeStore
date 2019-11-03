@@ -12,6 +12,7 @@ connectDB();
 app.use(cors());
 
 app.use(morgan("dev"));
+app.use("/uploads", express.static("uploads"));
 app.use(express.json({ extended: false }));
 
 app.use("/products", productRoutes);
