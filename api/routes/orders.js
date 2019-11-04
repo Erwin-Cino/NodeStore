@@ -4,8 +4,9 @@ const Order = require("../models/order");
 const mongoose = require("mongoose");
 const { check, validationResult } = require("express-validator");
 const Product = require("../models/product");
+const checkAuth = require("../middleware/check-auth");
 
-router.get("/", async (req, res, next) => {
+router.get("/", checkAuth, async (req, res, next) => {
   try {
     const allOrders = await Order.find()
       .select("product quantity _id")
@@ -29,7 +30,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.post("/", async (req, res, next) => {
+router.post("/", checkAuth, async (req, res, next) => {
   const { quantity, productId } = req.body;
   try {
     const findProd = Product.findById(productId);
@@ -62,7 +63,7 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.get("/:orderId", async (req, res, next) => {
+router.get("/:orderId", checkAuth, async (req, res, next) => {
   // 201 everything was created!
   const id = req.params.orderId;
 
@@ -83,7 +84,7 @@ router.get("/:orderId", async (req, res, next) => {
   }
 });
 
-router.delete("/:orderId", async (req, res, next) => {
+router.delete("/:orderId", checkAuth, async (req, res, next) => {
   const id = req.params.orderId;
   try {
     const foundOrder = await Order.findById(id);

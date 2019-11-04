@@ -1,3 +1,4 @@
 {
-  "mongoURI": "mongodb+srv://potatouser:welcometovirus03@cluster0-6wulh.mongodb.net/test?retryWrites=true&w=majority"
+  "mongoURI": "mongodb+srv://potatouser:welcometovirus03@cluster0-6wulh.mongodb.net/test?retryWrites=true&w=majority",
+  "JWT_KEY": "secretToken"
 }

@@ -4,6 +4,7 @@ const Product = require("../models/product");
 const mongoose = require("mongoose");
 const { check, validationResult } = require("express-validator");
 const multer = require("multer");
+const checkAuth = require("../middleware/check-auth");
 
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
@@ -57,6 +58,7 @@ router.get("/", async (req, res, next) => {
 
 router.post(
   "/",
+  checkAuth,
   upload.single("productImage"),
   [
     check("name", "Name of the product is required")
@@ -122,7 +124,7 @@ router.get("/:productId", async (req, res, next) => {
   }
 });
 
-router.patch("/:productId", async (req, res, next) => {
+router.patch("/:productId", checkAuth, async (req, res, next) => {
   const id = req.params.productId;
   const { name, price } = req.body;
   const productFields = {};
@@ -150,7 +152,7 @@ router.patch("/:productId", async (req, res, next) => {
   }
 });
 
-router.delete("/:productId", async (req, res, next) => {
+router.delete("/:productId", checkAuth, async (req, res, next) => {
   const id = req.params.productId;
   try {
     const deletedProduct = await Product.remove({ _id: id });
